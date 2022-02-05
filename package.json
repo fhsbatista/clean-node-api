@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "test-staged": "jest --passWithNoTests",  
     "lint": "eslint . --ext .ts",
     "eslint_init": "eslint --init",
     "prepare": "husky install"
