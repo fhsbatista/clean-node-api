@@ -13,14 +13,12 @@ export class SignUpController implements Controller {
 
   async handle (httpRequest: HttpRequest): Promise<HttpResponse> {
     try {
-      const requiredFields = ['name', 'email', 'password', 'passwordConfirmation']
-      for (const field of requiredFields) {
-        if (!httpRequest.body[field]) {
-          return badRequest(new MissingParamError(field))
-        }
+      const missingRequiredField = this.getRequiredFieldMissing(httpRequest.body)
+      if (missingRequiredField) {
+        return badRequest(new MissingParamError(missingRequiredField))
       }
       const { name, email, password, passwordConfirmation } = httpRequest.body
-      if (password !== passwordConfirmation) {
+      if (!this.arePasswordsValid(password, passwordConfirmation)) {
         return badRequest(new InvalidParamError('passwordConfirmation'))
       }
       const isValid = this.emailValidator.isValid(email)
@@ -36,5 +34,19 @@ export class SignUpController implements Controller {
     } catch (error) {
       return serverError()
     }
+  }
+
+  getRequiredFieldMissing (body: any): string {
+    const requiredFields = ['name', 'email', 'password', 'passwordConfirmation']
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        return field
+      }
+    }
+    return null
+  }
+
+  arePasswordsValid (password: string, passwordConfirmation: string): boolean {
+    return password === passwordConfirmation
   }
 }
