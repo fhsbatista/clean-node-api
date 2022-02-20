@@ -38,16 +38,6 @@ export class SignUpController implements Controller {
     }
   }
 
-  getRequiredFieldMissing (body: any): string {
-    const requiredFields = ['name', 'email', 'password', 'passwordConfirmation']
-    for (const field of requiredFields) {
-      if (!body[field]) {
-        return field
-      }
-    }
-    return null
-  }
-
   arePasswordsValid (password: string, passwordConfirmation: string): boolean {
     return password === passwordConfirmation
   }
