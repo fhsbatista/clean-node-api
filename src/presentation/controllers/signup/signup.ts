@@ -27,8 +27,4 @@ export class SignUpController implements Controller {
       return serverError(error)
     }
   }
-
-  arePasswordsValid (password: string, passwordConfirmation: string): boolean {
-    return password === passwordConfirmation
-  }
 }
