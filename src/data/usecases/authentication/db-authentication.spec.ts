@@ -1,6 +1,7 @@
 import { AccountModel } from '../../../domain/models/account'
 import { AuthenticationModel } from '../../../domain/usecases/authentication'
 import { HashComparer } from '../../protocols/cryptography/hash-comparer'
+import { TokenGenerator } from '../../protocols/cryptography/token-generator'
 import { LoadAccountByEmailRepository } from '../../protocols/db/load-account-by-email-repository'
 import { DBAuthentication } from './db-authentication'
 
@@ -34,14 +35,29 @@ const makeHashComparer = (): HashComparer => {
   return new HashComparerStub()
 }
 
+const makeTokenGenerator = (): TokenGenerator => {
+  class TokenGeneratorStub implements TokenGenerator {
+    async generate (id: string): Promise<string> {
+      return new Promise(resolve => resolve('any_token'))
+    }
+  }
+  return new TokenGeneratorStub()
+}
+
 const makeSut = (): SutTypes => {
   const loadAccountByEmailRepositoryStub = makeLoadAccountByEmailRepository()
   const hashComparerStub = makeHashComparer()
-  const sut = new DBAuthentication(loadAccountByEmailRepositoryStub, hashComparerStub)
+  const tokenGeneratorStub = makeTokenGenerator()
+  const sut = new DBAuthentication(
+    loadAccountByEmailRepositoryStub,
+    hashComparerStub,
+    tokenGeneratorStub
+  )
   return {
     sut,
     loadAccountByEmailRepositoryStub,
-    hashComparerStub
+    hashComparerStub,
+    tokenGeneratorStub
   }
 }
 
@@ -49,6 +65,7 @@ interface SutTypes {
   sut: DBAuthentication
   loadAccountByEmailRepositoryStub: LoadAccountByEmailRepository
   hashComparerStub: HashComparer
+  tokenGeneratorStub: TokenGenerator
 }
 
 describe('DBAuthentication Usecase', () => {
@@ -92,5 +109,19 @@ describe('DBAuthentication Usecase', () => {
     jest.spyOn(hashComparerStub, 'compare').mockReturnValueOnce(new Promise(resolve => resolve(false)))
     const accessToken = await sut.auth(makeFakeAuthentication())
     expect(accessToken).toBeNull()
+  })
+
+  test('Should call TokenGenerator with correct id', async () => {
+    const { sut, tokenGeneratorStub } = makeSut()
+    const generateSpy = jest.spyOn(tokenGeneratorStub, 'generate')
+    await sut.auth(makeFakeAuthentication())
+    expect(generateSpy).toHaveBeenCalledWith('any_id')
+  })
+
+  test('Should throw if HashComparer throws', async () => {
+    const { sut, hashComparerStub } = makeSut()
+    jest.spyOn(hashComparerStub, 'compare').mockReturnValueOnce(new Promise((resolve, reject) => reject(new Error())))
+    const promise = sut.auth(makeFakeAuthentication())
+    await expect(promise).rejects.toThrow()
   })
 })
