@@ -50,20 +50,14 @@ describe('Login Routes', () => {
         .expect(200)
     })
 
-    test('Should return 401 on login', async () => {
-      const hashedPassword = await bcrypy.hash('f3rnando', 12)
-      await accountCollection.insertOne({
-        name: 'Fernando Batista',
-        email: 'fernando.batista@fbatista.com',
-        password: hashedPassword
-      })
+    test('Should return 401 on login when the user is not registered', async () => {
       await request(app)
         .post('/api/login')
         .send({
           email: 'fernando.batista@fbatista.com',
           password: 'f3rnando'
         })
-        .expect(200)
+        .expect(401)
     })
   })
 })
