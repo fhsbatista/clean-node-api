@@ -15,7 +15,8 @@
     "test-ci": "npm test -- --coverage",
     "lint": "eslint . --ext .ts",
     "eslint_init": "eslint --init",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "clear-jest": "jest --clearCache"
   },
   "keywords": [],
   "author": "",
