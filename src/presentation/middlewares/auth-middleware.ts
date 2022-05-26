@@ -15,7 +15,7 @@ export class AuthMiddleware implements Middleware {
       if (!accessToken) {
         return forbidden(new AccessDeniedError())
       }
-      const account = await this.loadAccountByToken.load(httpRequest.headers['x-access-token'], this.role)
+      const account = await this.loadAccountByToken.load(accessToken, this.role)
       if (!account) {
         return forbidden(new AccessDeniedError())
       }
